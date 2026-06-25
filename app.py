@@ -78,7 +78,7 @@ def login_user(username, password):
 # ==================== 初始化函数 ====================
 
 def init_questions_csv():
-    """初始化题库CSV文件（多维度，30题）"""
+    """初始化题库CSV文件（多维度，100题）"""
     if not os.path.exists(QUESTIONS_CSV):
         questions_data = [
             # ===== 太阳系 =====
@@ -120,6 +120,85 @@ def init_questions_csv():
             # ===== 星座 =====
             {"id": 29, "question": "北极星位于哪个星座？", "option_a": "大熊座", "option_b": "小熊座", "option_c": "仙后座", "option_d": "天龙座", "correct_answer": "B", "explanation": "北极星（勾陈一）位于小熊座，距离地球约430光年，由于靠近北天极而被用作导航星。", "topic": "星座"},
             {"id": 30, "question": "黄道十二星座中，哪个星座的亮星最多？", "option_a": "白羊座", "option_b": "狮子座", "option_c": "天蝎座", "option_d": "双子座", "correct_answer": "C", "explanation": "天蝎座拥有众多亮星，包括红色超巨星心宿二（大火），是黄道星座中星等最明亮的星座之一。", "topic": "星座"},
+            # ===== 太阳系（新增6题）=====
+            {"id": 31, "question": "金星的表面温度大约是多少？", "option_a": "100℃", "option_b": "约460℃", "option_c": "50℃", "option_d": "1000℃", "correct_answer": "B", "explanation": "金星表面温度约460℃，是太阳系中最热的行星，这主要归因于其浓厚的二氧化碳大气层产生的强烈温室效应。", "topic": "太阳系"},
+            {"id": 32, "question": "太阳系中哪颗行星的自转方向与其他行星相反？", "option_a": "火星", "option_b": "金星", "option_c": "木星", "option_d": "海王星", "correct_answer": "B", "explanation": "金星是太阳系中唯一逆向自转的行星，即自转方向与公转方向相反，这意味着在金星上太阳从西方升起。", "topic": "太阳系"},
+            {"id": 33, "question": "火星的卫星有几颗？", "option_a": "0颗", "option_b": "1颗", "option_c": "2颗", "option_d": "3颗", "correct_answer": "C", "explanation": "火星有两颗天然卫星：火卫一（福波斯）和火卫二（德摩斯），它们形状不规则，可能是被引力捕获的小行星。", "topic": "太阳系"},
+            {"id": 34, "question": "小行星带位于哪两颗行星之间？", "option_a": "地球和火星", "option_b": "火星和木星", "option_c": "木星和土星", "option_d": "土星和天王星", "correct_answer": "B", "explanation": "小行星带位于火星和木星轨道之间，包含数百万颗大小不等的小行星，是太阳系形成时留下的原始物质。", "topic": "太阳系"},
+            {"id": 35, "question": "太阳系中最大的火山在哪颗行星上？", "option_a": "地球", "option_b": "金星", "option_c": "火星", "option_d": "木星", "correct_answer": "C", "explanation": "火星上的奥林匹斯山是太阳系中最大的火山，高约21.9公里，底部直径约600公里，是一座巨大的盾状火山。", "topic": "太阳系"},
+            {"id": 36, "question": "天王星和海王星属于哪类行星？", "option_a": "岩石行星", "option_b": "气态巨行星", "option_c": "冰巨星", "option_d": "矮行星", "correct_answer": "C", "explanation": "天王星和海王星被称为冰巨星，主要由水、甲烷和氨的冰构成，不同于木星和土星那样的气态巨行星。", "topic": "太阳系"},
+            # ===== 银河系（新增8题）=====
+            {"id": 37, "question": "银河系的中心位于哪个星座方向？", "option_a": "猎户座", "option_b": "射手座", "option_c": "大熊座", "option_d": "仙后座", "correct_answer": "B", "explanation": "银河系的中心位于人马座（射手座）方向，距离地球约2.6万光年，那里有一个超大质量黑洞——人马座A*。", "topic": "银河系"},
+            {"id": 38, "question": "银河系的直径大约是多少？", "option_a": "1万光年", "option_b": "10万光年", "option_c": "100万光年", "option_d": "1000万光年", "correct_answer": "B", "explanation": "银河系的直径约为10万光年，包含1000亿到4000亿颗恒星。", "topic": "银河系"},
+            {"id": 39, "question": "银河系的卫星星系有哪些？", "option_a": "仙女座星系", "option_b": "大小麦哲伦云", "option_c": "三角座星系", "option_d": "漩涡星系", "correct_answer": "B", "explanation": "大麦哲伦云和小麦哲伦云是银河系最大的两个卫星星系，在南半球肉眼可见，距离地球约16万光年。", "topic": "银河系"},
+            {"id": 40, "question": "银河系属于哪个星系群？", "option_a": "室女座星系团", "option_b": "本星系群", "option_c": "后发座星系团", "option_d": "武仙座超星系团", "correct_answer": "B", "explanation": "银河系属于本星系群，该星系群包含约80个星系，其中最大的成员是仙女座星系和银河系。", "topic": "银河系"},
+            {"id": 41, "question": "银河系中恒星的主要诞生区域在哪里？", "option_a": "银晕", "option_b": "银心", "option_c": "旋臂", "option_d": "银盘边缘", "correct_answer": "C", "explanation": "银河系的旋臂是恒星形成的主要区域，那里有大量的星际气体和尘埃，为恒星诞生提供了原料。", "topic": "银河系"},
+            {"id": 42, "question": "银河系中大约有多少个球状星团？", "option_a": "约50个", "option_b": "约150个", "option_c": "约500个", "option_d": "约2000个", "correct_answer": "B", "explanation": "银河系中已知约有150个球状星团，它们由数十万颗老年恒星组成，分布在银晕中。", "topic": "银河系"},
+            {"id": 43, "question": "太阳绕银河系中心公转一周大约需要多久？", "option_a": "1亿年", "option_b": "2.5亿年", "option_c": "10亿年", "option_d": "1000万年", "correct_answer": "B", "explanation": "太阳以约220公里/秒的速度绕银河系中心运动，完成一次公转大约需要2.5亿年，这被称为一个银河年。", "topic": "银河系"},
+            {"id": 44, "question": "银河系中星际介质的密度大约是多少？", "option_a": "每立方厘米1个原子", "option_b": "每立方厘米100个原子", "option_c": "每立方厘米1000个原子", "option_d": "与地球大气相同", "correct_answer": "A", "explanation": "银河系中的星际介质极其稀薄，平均密度约为每立方厘米1个氢原子，远低于地球上能达到的最高真空度。", "topic": "银河系"},
+            # ===== 恒星（新增7题）=====
+            {"id": 45, "question": "恒星演化末期可能形成的天体有哪些？", "option_a": "白矮星", "option_b": "中子星", "option_c": "黑洞", "option_d": "以上都是", "correct_answer": "D", "explanation": "恒星演化的最终产物取决于其初始质量：小质量恒星→白矮星，中等质量→中子星，大质量→黑洞。", "topic": "恒星"},
+            {"id": 46, "question": "赫罗图（H-R图）的横轴和纵轴分别代表什么？", "option_a": "质量和半径", "option_b": "光谱型和光度", "option_c": "温度和密度", "option_d": "距离和速度", "correct_answer": "B", "explanation": "赫罗图以恒星的光谱型（或表面温度）为横轴、光度（或绝对星等）为纵轴，是研究恒星演化的重要工具。", "topic": "恒星"},
+            {"id": 47, "question": "变星中最著名的一颗是哪个？", "option_a": "天狼星", "option_b": "造父一（仙王座δ）", "option_c": "天津四", "option_d": "织女星", "correct_answer": "B", "explanation": "造父一（仙王座δ）是最著名的造父变星，其亮度周期性变化，被视为测量遥远星系距离的\"标准烛光\"。", "topic": "恒星"},
+            {"id": 48, "question": "太阳属于哪种光谱型恒星？", "option_a": "O型", "option_b": "B型", "option_c": "G型", "option_d": "M型", "correct_answer": "C", "explanation": "太阳属于G2V型恒星（黄矮星），表面温度约5778K，处于主序星阶段，预计总寿命约100亿年。", "topic": "恒星"},
+            {"id": 49, "question": "红矮星的主要特征是什么？", "option_a": "温度高、质量大", "option_b": "温度低、质量小、寿命长", "option_c": "温度高、光度大", "option_d": "寿命短、快速演化", "correct_answer": "B", "explanation": "红矮星是质量最小的主序星（0.08-0.5太阳质量），表面温度低、呈红色，但寿命极长可达数千亿年。", "topic": "恒星"},
+            {"id": 50, "question": "比邻星距离地球多远？", "option_a": "1光年", "option_b": "约4.2光年", "option_c": "10光年", "option_d": "100光年", "correct_answer": "B", "explanation": "比邻星是距太阳最近的恒星，距离约4.2光年，它是半人马座α三星系统中的一员。", "topic": "恒星"},
+            {"id": 51, "question": "恒星在何时达到生命周期中最稳定的阶段？", "option_a": "红巨星阶段", "option_b": "主序星阶段", "option_c": "原恒星阶段", "option_d": "白矮星阶段", "correct_answer": "B", "explanation": "主序星阶段是恒星生命周期中最长、最稳定的时期，恒星通过氢核聚变产生能量，内部处于流体静力学平衡。", "topic": "恒星"},
+            # ===== 黑洞与天体物理（新增8题）=====
+            {"id": 52, "question": "黑洞\"事件视界\"的含义是什么？", "option_a": "黑洞的物理表面", "option_b": "光无法逃逸的边界", "option_c": "黑洞的自转轴", "option_d": "黑洞的吸积盘外缘", "correct_answer": "B", "explanation": "事件视界是黑洞的边界，任何物质（包括光）一旦越过此边界就无法逃脱黑洞的引力束缚。", "topic": "黑洞与天体物理"},
+            {"id": 53, "question": "史瓦西半径与什么有关？", "option_a": "黑洞的自转速度", "option_b": "黑洞的质量", "option_c": "黑洞的电荷", "option_d": "黑洞的温度", "correct_answer": "B", "explanation": "史瓦西半径与黑洞质量成正比，它定义了非旋转黑洞的事件视界半径，一个太阳质量的黑洞史瓦西半径约3公里。", "topic": "黑洞与天体物理"},
+            {"id": 54, "question": "引力波是由谁首先预言存在的？", "option_a": "牛顿", "option_b": "爱因斯坦", "option_c": "霍金", "option_d": "伽利略", "correct_answer": "B", "explanation": "爱因斯坦在1916年基于广义相对论预言了引力波的存在。2015年LIGO首次直接探测到引力波信号。", "topic": "黑洞与天体物理"},
+            {"id": 55, "question": "霍金辐射理论认为黑洞最终会怎样？", "option_a": "永远存在", "option_b": "逐渐蒸发消失", "option_c": "变成白矮星", "option_d": "分裂成两个黑洞", "correct_answer": "B", "explanation": "霍金辐射理论认为黑洞会因量子效应而缓慢辐射能量，最终完全蒸发消失，但这一过程对恒星质量黑洞极其漫长。", "topic": "黑洞与天体物理"},
+            {"id": 56, "question": "LIGO探测到的首个引力波信号来自什么？", "option_a": "超新星爆发", "option_b": "两个黑洞的合并", "option_c": "两颗中子星合并", "option_d": "宇宙大爆炸", "correct_answer": "B", "explanation": "2015年LIGO探测到的首个引力波信号GW150914来自约13亿光年外两个恒星质量黑洞的合并事件。", "topic": "黑洞与天体物理"},
+            {"id": 57, "question": "银河系中心的超大质量黑洞叫什么？", "option_a": "M87*", "option_b": "人马座A*", "option_c": "天鹅座X-1", "option_d": "GRO J1655-40", "correct_answer": "B", "explanation": "银河系中心的超大质量黑洞被称为人马座A*（Sagittarius A*），质量约为太阳的430万倍。", "topic": "黑洞与天体物理"},
+            {"id": 58, "question": "什么是白洞？", "option_a": "白色黑洞", "option_b": "理论上物质只能喷出不能进入的天体", "option_c": "恒星演化末期", "option_d": "星系中心的明亮区域", "correct_answer": "B", "explanation": "白洞是广义相对论中预言的一种理论天体，物质只能从其中喷出而不能进入，与黑洞的性质完全相反，目前尚未被观测证实。", "topic": "黑洞与天体物理"},
+            {"id": 59, "question": "吸积盘在黑洞系统中有什么作用？", "option_a": "保护黑洞不受撞击", "option_b": "物质螺旋落入黑洞时释放能量", "option_c": "阻挡X射线", "option_d": "产生暗物质", "correct_answer": "B", "explanation": "吸积盘是围绕黑洞旋转的气体和尘埃盘，物质在螺旋落向黑洞的过程中因摩擦而剧烈加热，释放出大量X射线和可见光。", "topic": "黑洞与天体物理"},
+            # ===== 天文探索（新增8题）=====
+            {"id": 60, "question": "人类历史上首次进入太空的宇航员是谁？", "option_a": "阿姆斯特朗", "option_b": "加加林", "option_c": "列昂诺夫", "option_d": "季托夫", "correct_answer": "B", "explanation": "1961年4月12日，苏联宇航员尤里·加加林乘坐东方一号飞船进入太空，成为人类历史上第一个进入太空的人。", "topic": "天文探索"},
+            {"id": 61, "question": "中国首次火星探测任务叫什么？", "option_a": "嫦娥", "option_b": "天问一号", "option_c": "神舟", "option_d": "北斗", "correct_answer": "B", "explanation": "天问一号是中国首次火星探测任务，2021年成功着陆火星表面，一次性完成了绕、着、巡三大目标。", "topic": "天文探索"},
+            {"id": 62, "question": "旅行者1号探测器目前在哪里？", "option_a": "火星轨道", "option_b": "木星附近", "option_c": "进入星际空间", "option_d": "已坠毁", "correct_answer": "C", "explanation": "旅行者1号于1977年发射，2012年穿越日球层顶进入星际空间，是目前离地球最远的人造探测器。", "topic": "天文探索"},
+            {"id": 63, "question": "开普勒太空望远镜的主要科学目标是什么？", "option_a": "观测黑洞", "option_b": "搜寻系外行星", "option_c": "研究太阳活动", "option_d": "绘制银河系地图", "correct_answer": "B", "explanation": "开普勒太空望远镜的主要任务是搜寻系外行星，通过观测恒星的亮度变化来发现凌星现象，已确认数千颗系外行星。", "topic": "天文探索"},
+            {"id": 64, "question": "世界上最大的光学望远镜位于哪里？", "option_a": "夏威夷", "option_b": "智利", "option_c": "加那利群岛", "option_d": "西藏", "correct_answer": "B", "explanation": "欧洲极大望远镜（E-ELT）和大型综合巡天望远镜（LSST）均位于智利，智利阿塔卡马沙漠是世界顶级天文观测地。", "topic": "天文探索"},
+            {"id": 65, "question": "钱德拉X射线天文台主要观测什么？", "option_a": "可见光", "option_b": "X射线", "option_c": "红外线", "option_d": "射电波", "correct_answer": "B", "explanation": "钱德拉X射线天文台专门观测宇宙中的X射线源，如黑洞、超新星遗迹、星系团中的高温气体等极端天体。", "topic": "天文探索"},
+            {"id": 66, "question": "中国嫦娥五号任务的主要成就是什么？", "option_a": "首次载人登月", "option_b": "月球背面软着陆", "option_c": "月面采样返回", "option_d": "月球车巡视", "correct_answer": "C", "explanation": "2020年嫦娥五号成功从月球表面采集约1.73公斤月壤样品并返回地球，是中国首次地外天体采样返回任务。", "topic": "天文探索"},
+            {"id": 67, "question": "首次系外行星是在哪一年被发现的？", "option_a": "1985年", "option_b": "1995年", "option_c": "2005年", "option_d": "2010年", "correct_answer": "B", "explanation": "1995年，天文学家发现飞马座51b，这是人类发现的第一颗围绕主序星运行的系外行星，开辟了系外行星研究新时代。", "topic": "天文探索"},
+            # ===== 月球（新增8题）=====
+            {"id": 68, "question": "月球表面的最高温度能达到多少？", "option_a": "约50℃", "option_b": "约127℃", "option_c": "约300℃", "option_d": "约500℃", "correct_answer": "B", "explanation": "月球表面白天温度可升至约127℃，夜间则降至零下173℃，昼夜温差高达300℃，这是由于月球没有大气层保温。", "topic": "月球"},
+            {"id": 69, "question": "月球上为什么有很多陨石坑？", "option_a": "月球引力更强", "option_b": "没有大气层保护", "option_c": "月球更靠近小行星带", "option_d": "月球年龄更大", "correct_answer": "B", "explanation": "月球没有大气层，流星体可以直接撞击月面形成陨石坑，不像地球大气层能烧毁大部分小天体。", "topic": "月球"},
+            {"id": 70, "question": "月球正在以多快的速度远离地球？", "option_a": "每年约1厘米", "option_b": "每年约3.8厘米", "option_c": "每年约1米", "option_d": "每年约10米", "correct_answer": "B", "explanation": "由于潮汐相互作用，月球正以约每年3.8厘米的速度远离地球，同时地球的自转速度也在逐渐减慢。", "topic": "月球"},
+            {"id": 71, "question": "月球表面最显著的地形特征是什么？", "option_a": "高山", "option_b": "月海", "option_c": "峡谷", "option_d": "火山口", "correct_answer": "B", "explanation": "月海是月球表面大片暗色玄武岩平原，最早的天文学家误以为是海洋，因此取名\"月海\"，实际没有任何水体。", "topic": "月球"},
+            {"id": 72, "question": "月球轨道偏离黄道面的角度是多少？", "option_a": "约5度", "option_b": "约10度", "option_c": "约15度", "option_d": "约23.5度", "correct_answer": "A", "explanation": "月球轨道与黄道面（地球公转轨道面）的夹角约为5度，这个倾角使得日食和月食并不每个月都发生。", "topic": "月球"},
+            {"id": 73, "question": "月壤（月尘）的主要成分是什么？", "option_a": "铁和镍", "option_b": "硅酸盐矿物", "option_c": "纯硅", "option_d": "水冰", "correct_answer": "B", "explanation": "月壤主要由硅酸盐矿物颗粒组成，含有丰富的氧、硅、铝、铁等元素，经过数十亿年的微陨石轰击形成细粉状。", "topic": "月球"},
+            {"id": 74, "question": "人类最后一次登月是在哪一年？", "option_a": "1970年", "option_b": "1972年", "option_c": "1975年", "option_d": "1980年", "correct_answer": "B", "explanation": "阿波罗17号于1972年12月完成人类迄今为止最后一次登月任务，指令长尤金·塞尔南是最后一个踏上月球的人。", "topic": "月球"},
+            {"id": 75, "question": "月球上是否发现过水冰？", "option_a": "从未发现", "option_b": "在极地阴影区发现", "option_c": "在月海发现大量水", "option_d": "只在月球背面发现", "correct_answer": "B", "explanation": "多项探测任务在月球极地永久阴影区的陨石坑中发现了水冰存在的证据，这些水冰可能是未来月球探测的重要资源。", "topic": "月球"},
+            # ===== 宇宙学（新增8题）=====
+            {"id": 76, "question": "宇宙大爆炸后大约多久形成了第一批恒星？", "option_a": "1万年", "option_b": "约1亿年", "option_c": "10亿年", "option_d": "100亿年", "correct_answer": "B", "explanation": "宇宙大爆炸后约1亿年，原始气体云在引力作用下坍缩，形成了宇宙中第一批恒星（族III恒星）。", "topic": "宇宙学"},
+            {"id": 77, "question": "宇宙的膨胀是由什么现象发现的？", "option_a": "恒星运动", "option_b": "星系红移", "option_c": "行星轨道", "option_d": "彗星轨迹", "correct_answer": "B", "explanation": "埃德温·哈勃观测到遥远星系的谱线出现红移，且红移量与星系距离成正比，证明宇宙正在膨胀。", "topic": "宇宙学"},
+            {"id": 78, "question": "暗能量在宇宙中占多少比例？", "option_a": "约5%", "option_b": "约25%", "option_c": "约68%", "option_d": "约95%", "correct_answer": "C", "explanation": "根据普朗克卫星数据，宇宙中暗能量约占68%，暗物质约占27%，普通物质仅占约5%。", "topic": "宇宙学"},
+            {"id": 79, "question": "什么是宇宙学原理？", "option_a": "宇宙以地球为中心", "option_b": "宇宙在大尺度上是均匀且各向同性的", "option_c": "宇宙是静止不变的", "option_d": "宇宙是无限大的", "correct_answer": "B", "explanation": "宇宙学原理认为在足够大的尺度上（>1亿光年），宇宙是均匀且各向同性的，这是现代宇宙学的基本假设。", "topic": "宇宙学"},
+            {"id": 80, "question": "可观测宇宙的直径大约是多少？", "option_a": "约100亿光年", "option_b": "约930亿光年", "option_c": "约1万亿光年", "option_d": "约10万亿光年", "correct_answer": "B", "explanation": "可观测宇宙的直径约930亿光年，这是从地球到宇宙可见边界的距离，由于宇宙膨胀，实际范围比宇宙年龄对应的大。", "topic": "宇宙学"},
+            {"id": 81, "question": "星系红移的宇宙学含义是什么？", "option_a": "星系在远离我们", "option_b": "星系在靠近我们", "option_c": "星系在自转", "option_d": "星系在变暗", "correct_answer": "A", "explanation": "星系红移意味着星系正在远离我们，这是宇宙膨胀的直接证据，红移量越大说明星系远离速度越快。", "topic": "宇宙学"},
+            {"id": 82, "question": "宇宙微波背景辐射的温度是多少？", "option_a": "约零下100℃", "option_b": "约2.7K", "option_c": "约零度", "option_d": "约100K", "correct_answer": "B", "explanation": "宇宙微波背景辐射的温度约为2.725开尔文（约零下270.4℃），是宇宙大爆炸的余晖，均匀分布在宇宙各处。", "topic": "宇宙学"},
+            {"id": 83, "question": "什么是费米悖论？", "option_a": "宇宙是有限的", "option_b": "外星文明存在的概率与观测缺失的矛盾", "option_c": "光速无法超越", "option_d": "量子纠缠的不确定性", "correct_answer": "B", "explanation": "费米悖论指出：考虑到宇宙的年龄和星系数量，外星文明应该普遍存在，但人类至今没有发现任何地外文明的证据，这一矛盾令人深思。", "topic": "宇宙学"},
+            # ===== 航天技术（新增8题）=====
+            {"id": 84, "question": "中国第一位进入太空的航天员是谁？", "option_a": "杨利伟", "option_b": "费俊龙", "option_c": "聂海胜", "option_d": "翟志刚", "correct_answer": "A", "explanation": "2003年10月15日，杨利伟乘坐神舟五号飞船进入太空，使中国成为继苏美之后第三个独立将人送入太空的国家。", "topic": "航天技术"},
+            {"id": 85, "question": "国际空间站的轨道高度大约是多少？", "option_a": "约200公里", "option_b": "约400公里", "option_c": "约1000公里", "option_d": "约36000公里", "correct_answer": "B", "explanation": "国际空间站运行在距地面约400公里的近地轨道上，轨道倾角51.6度，以约7.66公里/秒的速度绕地球飞行。", "topic": "航天技术"},
+            {"id": 86, "question": "火箭推进的基本物理原理是什么？", "option_a": "伯努利定律", "option_b": "牛顿第三定律（作用与反作用）", "option_c": "热力学第二定律", "option_d": "万有引力定律", "correct_answer": "B", "explanation": "火箭发动机通过向后高速喷射燃料燃烧产生的高速气流，根据牛顿第三定律获得向前的推力，从而在真空中也能航行。", "topic": "航天技术"},
+            {"id": 87, "question": "地球同步轨道卫星的高度是多少？", "option_a": "约400公里", "option_b": "约2000公里", "option_c": "约35786公里", "option_d": "约10万公里", "correct_answer": "C", "explanation": "地球同步轨道距地面约35786公里，卫星在此轨道上运行周期等于地球自转周期（约24小时），相对地面保持静止。", "topic": "航天技术"},
+            {"id": 88, "question": "中国北斗卫星导航系统属于什么类型的轨道？", "option_a": "仅地球静止轨道", "option_b": "混合轨道（GEO+IGSO+MEO）", "option_c": "仅中地球轨道", "option_d": "仅低地球轨道", "correct_answer": "B", "explanation": "北斗系统采用混合星座设计，包括地球静止轨道（GEO）、倾斜地球同步轨道（IGSO）和中地球轨道（MEO）三种轨道卫星。", "topic": "航天技术"},
+            {"id": 89, "question": "航天员在太空中为什么会失重？", "option_a": "没有地球引力", "option_b": "处于自由落体状态", "option_c": "离地球太远", "option_d": "太空没有空气", "correct_answer": "B", "explanation": "航天员处于失重状态是因为飞船和航天员一起绕地球做自由落体运动，并非因为没有引力（轨道上的引力仍有地球表面的约90%）。", "topic": "航天技术"},
+            {"id": 90, "question": "可重复使用火箭技术的主要优势是什么？", "option_a": "飞得更快", "option_b": "降低发射成本", "option_c": "载重更大", "option_d": "飞行更安全", "correct_answer": "B", "explanation": "可重复使用火箭通过回收和复用一级火箭，大幅降低航天发射成本，SpaceX的猎鹰9号火箭已实现多次成功回收。", "topic": "航天技术"},
+            {"id": 91, "question": "深空探测中\"引力弹弓\"效应利用的是什么原理？", "option_a": "电磁加速", "option_b": "行星引力转移轨道能量", "option_c": "太阳风推进", "option_d": "激光推进", "correct_answer": "B", "explanation": "引力弹弓效应利用飞越行星时的引力转移能量，给探测器加速或减速，旅行者号就是利用木星和土星的引力弹弓飞向外太阳系。", "topic": "航天技术"},
+            # ===== 星座（新增9题）=====
+            {"id": 92, "question": "全天共有多少个星座？", "option_a": "48个", "option_b": "66个", "option_c": "88个", "option_d": "108个", "correct_answer": "C", "explanation": "国际天文学联合会将全天划分为88个星座，覆盖整个天球，每个星座有明确的边界。", "topic": "星座"},
+            {"id": 93, "question": "夏季大三角由哪三颗星组成？", "option_a": "织女星、牛郎星、天津四", "option_b": "天狼星、参宿四、南河三", "option_c": "北极星、织女星、心宿二", "option_d": "大角星、角宿一、五帝座一", "correct_answer": "A", "explanation": "夏季大三角由天琴座的织女星、天鹰座的牛郎星和天鹅座的天津四组成，是夏季夜空中最显著的星群。", "topic": "星座"},
+            {"id": 94, "question": "北斗七星属于哪个星座？", "option_a": "小熊座", "option_b": "大熊座", "option_c": "猎户座", "option_d": "仙后座", "correct_answer": "B", "explanation": "北斗七星是大熊座的一部分，由七颗亮星组成勺状结构，常被用作寻找北极星的导航标志。", "topic": "星座"},
+            {"id": 95, "question": "全天最亮的恒星是哪颗？", "option_a": "北极星", "option_b": "天狼星", "option_c": "织女星", "option_d": "参宿四", "correct_answer": "B", "explanation": "天狼星（大犬座α）是全天最亮的恒星，视星等约-1.46，距离地球约8.6光年，实际上是一个双星系统。", "topic": "星座"},
+            {"id": 96, "question": "冬季夜空中最容易辨认的星座是哪个？", "option_a": "大熊座", "option_b": "猎户座", "option_c": "天鹰座", "option_d": "天蝎座", "correct_answer": "B", "explanation": "猎户座是冬季夜空最耀眼的星座，其\"腰带\"三星排列整齐，周围有参宿四（红色）和参宿七（蓝色）等亮星。", "topic": "星座"},
+            {"id": 97, "question": "黄道星座共有多少个？", "option_a": "10个", "option_b": "12个", "option_c": "13个", "option_d": "14个", "correct_answer": "B", "explanation": "黄道星座传统上有12个，但太阳实际在天球上经过13个星座（包括蛇夫座），不过占星学仍沿用12星座体系。", "topic": "星座"},
+            {"id": 98, "question": "南半球最著名的星座是哪个？", "option_a": "猎户座", "option_b": "南十字座", "option_c": "大熊座", "option_d": "仙后座", "correct_answer": "B", "explanation": "南十字座是南半球夜空最具代表性的星座，虽然是最小的星座之一，但其中的南十字星是南半球导航的重要标志。", "topic": "星座"},
+            {"id": 99, "question": "仙后座在北半球夜空中是什么形状？", "option_a": "勺状", "option_b": "W或M状", "option_c": "十字形", "option_d": "三角形", "correct_answer": "B", "explanation": "仙后座由五颗亮星组成W（或M）形状，与北斗七星分别位于北极星两侧，是北半球全年可见的拱极星座。", "topic": "星座"},
+            {"id": 100, "question": "星座中星星的命名规则是什么？", "option_a": "按距离排序", "option_b": "一般按亮度用希腊字母排序", "option_c": "按发现的先后顺序", "option_d": "随机编号", "correct_answer": "B", "explanation": "星座中的恒星通常按亮度由亮到暗用希腊字母命名，如α星最亮、β星次之，后面再跟所属星座的属格名称。", "topic": "星座"},
         ]
         df = pd.DataFrame(questions_data)
         df.to_csv(QUESTIONS_CSV, index=False, encoding='utf-8-sig')
