@@ -23,7 +23,7 @@ import os
 import json
 import altair as alt
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 # 加载环境变量
@@ -40,6 +40,7 @@ LLM_API_URL = f"{LLM_BASE_URL}/v1/chat/completions"
 QUESTIONS_CSV = "questions.csv"
 USER_HISTORY_CSV = "user_history.csv"
 USERS_JSON = "users.json"
+IPGEOLOCATION_API_KEY = "bd4c9d9bbb874aea966c2942ee69c974"
 
 # ==================== 用户系统 ====================
 
@@ -163,6 +164,52 @@ def save_user_answer(question, user_answer, is_correct, topic):
         "topic": [topic]
     })
     new_record.to_csv(USER_HISTORY_CSV, mode='a', header=False, index=False, encoding='utf-8-sig')
+
+# ==================== 天文数据查询 ====================
+
+def get_astronomy_data(location=None, lat=None, long=None):
+    """从ipgeolocation.io获取天文数据"""
+    base_url = "https://api.ipgeolocation.io/astronomy"
+    params = {"apiKey": IPGEOLOCATION_API_KEY}
+    if location:
+        params["location"] = location
+    elif lat is not None and long is not None:
+        params["lat"] = lat
+        params["long"] = long
+    else:
+        return None
+    try:
+        resp = requests.get(base_url, params=params, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        st.error(f"API 请求失败 (HTTP {resp.status_code})")
+        return None
+    except requests.exceptions.Timeout:
+        st.error("请求超时，请检查网络连接")
+        return None
+    except requests.exceptions.ConnectionError:
+        st.error("网络连接失败，请检查网络")
+        return None
+    except Exception as e:
+        st.error(f"请求出错：{e}")
+        return None
+
+def parse_time(t_str):
+    """解析时间字符串 → time 对象（支持 12h/24h 格式）"""
+    for fmt in ("%H:%M:%S", "%H:%M", "%I:%M:%S %p", "%I:%M %p"):
+        try:
+            return datetime.strptime(t_str.strip(), fmt).time()
+        except:
+            pass
+    return None
+
+def add_min(t, mins):
+    """time 对象加减分钟"""
+    dt = datetime.combine(datetime.today(), t) + timedelta(minutes=mins)
+    return dt.time()
+
+def fmt_t(t):
+    return t.strftime("%H:%M")
 
 # ==================== 全局CSS样式 ====================
 
@@ -759,101 +806,57 @@ def apply_global_css():
 # ==================== 页面模块 ====================
 
 def daily_apod():
-    """每日天文模块 - NASA APOD API"""
+    """每日天文模块 - DeepSeek生成 + Unsplash星空图"""
     st.markdown('<h1 class="cosmo-page-title">🌌 每日天文</h1>', unsafe_allow_html=True)
     st.markdown('<p class="cosmo-page-subtitle">探索宇宙的奇妙瞬间</p>', unsafe_allow_html=True)
-    
-    # 初始化APOD缓存和请求标记
-    if 'apod_cache' not in st.session_state:
-        st.session_state['apod_cache'] = pd.DataFrame(columns=['date', 'title', 'url', 'explanation', 'media_type'])
-    if 'apod_fetch_done' not in st.session_state:
-        st.session_state['apod_fetch_done'] = False
-    
-    # 仅尝试请求一次（避免每次rerun重复请求加剧限流）
-    def fetch_today_apod():
-        today = datetime.now().date()
-        today_str = today.strftime("%Y-%m-%d")
-        import time as _time
-        
-        # 如果今天已缓存则跳过
-        if today_str in st.session_state['apod_cache']['date'].values:
-            return
-        
-        try:
-            url = f"https://api.nasa.gov/planetary/apod?api_key={NASA_API_KEY}"
-            response = requests.get(url, timeout=15)
-            response.raise_for_status()
-            data = response.json()
-            new_df = pd.DataFrame([{
-                'date': today_str,
-                'title': data.get('title', '无标题'),
-                'url': data.get('url', ''),
-                'explanation': data.get('explanation', '暂无说明'),
-                'media_type': data.get('media_type', 'image')
-            }])
-            st.session_state['apod_cache'] = pd.concat(
-                [st.session_state['apod_cache'], new_df], ignore_index=True
-            )
-        except requests.exceptions.HTTPError as e:
-            if response.status_code == 429:
-                st.info("🌌 NASA每日天文图片今日请求已达上限，展示归档图")
-            else:
-                st.info(f"🌠 NASA服务暂不可用（{response.status_code}），展示归档图")
-        except requests.exceptions.RequestException:
-            st.info("🌠 网络连接异常，展示归档星空图")
-        except Exception as e:
-            st.info(f"🌠 天文图片加载失败，展示归档图")
-        finally:
-            _time.sleep(1)
-    
-    # 未尝试过时才请求
-    if not st.session_state['apod_fetch_done']:
-        st.session_state['apod_fetch_done'] = True
-        with st.spinner("正在加载NASA天文数据..."):
-            fetch_today_apod()
-    
-    # 无数据时展示默认内容
-    if st.session_state['apod_cache'].empty:
-        st.markdown("""
-        <div class="cosmo-card">
-            <h3>🌠 每日天文</h3>
-            <p>今日图片暂不可用，欣赏这张经典星空吧</p>
-            <img src="https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800" alt="星空" style="width:100%;border-radius:8px;">
-        </div>
-        """, unsafe_allow_html=True)
-        return
-    
-    # 日期选择器（仅1天时降级为文本显示）
-    dates = sorted(st.session_state['apod_cache']['date'].unique())
-    if len(dates) > 1:
-        selected_date = st.select_slider("选择日期", options=dates, value=dates[-1])
-    else:
-        selected_date = dates[0]
-        st.markdown(f'<div style="text-align:center;color:rgba(255,255,255,0.6);font-size:0.85rem;">📅 {selected_date}</div>', unsafe_allow_html=True)
-    
-    # 获取选中日期的数据
-    apod_data = st.session_state['apod_cache'][st.session_state['apod_cache']['date'] == selected_date].iloc[0]
-    
-    # 展示内容
-    with st.container():
-        st.markdown(f"""
-        <div class="cosmo-card">
-            <h2>{apod_data['title']}</h2>
-            <p class="cosmo-subtitle">📅 {apod_data['date']}</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if apod_data['media_type'] == 'image':
-            st.image(apod_data['url'], use_column_width=True, caption=apod_data['title'])
-        else:
-            st.video(apod_data['url'])
-        
-        st.markdown(f"""
-        <div class="cosmo-card">
-            <h3>💡 科普说明</h3>
-            <p>{apod_data['explanation']}</p>
-        </div>
-        """, unsafe_allow_html=True)
+
+    today_str = datetime.now().strftime("%Y-%m-%d")
+
+    # 每日 Unsplash 星空图（按日期取模保证每日一致）
+    space_images = [
+        "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=1000",
+        "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=1000",
+        "https://images.unsplash.com/photo-1444703686981-a3abbc4d4fe3?w=1000",
+        "https://images.unsplash.com/photo-1504333638930-c8787321eee0?w=1000",
+        "https://images.unsplash.com/photo-1543722530-d2c3201371e7?w=1000",
+        "https://images.unsplash.com/photo-1445905595283-21f8ae8a33d2?w=1000",
+        "https://images.unsplash.com/photo-1534469628714-1c27e8a420e4?w=1000",
+    ]
+    img_url = random.choice(space_images)
+
+    # 缓存每日知识
+    cache_key = f"daily_knowledge_{today_str}"
+    if cache_key not in st.session_state:
+        st.session_state[cache_key] = None
+
+    if st.session_state[cache_key] is None:
+        prompt = f"""你是天文科普专家。请为今天（{today_str}）生成一条有趣的天文知识。
+以JSON格式返回，严格按以下结构，不要加额外文字：
+{{"title": "简短标题（10字内）", "explanation": "300-500字的科普说明，通俗易懂，内容准确"}}"""
+        with st.spinner("🧠 AI 正在生成今日天文知识..."):
+            try:
+                raw = call_llm_api([], prompt)
+                import json as _json
+                resp = _json.loads(raw.strip())
+                title = resp.get("title", "今日天文")
+                explanation = resp.get("explanation", "暂无内容")
+            except:
+                title = "🌠 今日天文"
+                explanation = "宇宙浩瀚无垠，每一天都有新的发现等待我们去探索。从恒星诞生到星系演化，天文学不断揭示着宇宙的奥秘。"
+            st.session_state[cache_key] = {"title": title, "explanation": explanation}
+
+    data = st.session_state[cache_key]
+
+    # 展示
+    st.markdown(f"""
+    <div class="cosmo-card">
+        <h3>💡 今日天文知识 — <span style="font-weight:600;">{data['title']}</span></h3>
+        <p class="cosmo-subtitle">📅 {today_str}</p>
+        <p style="font-size:1.1rem;line-height:1.8;">{data['explanation']}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.image(img_url, use_container_width=True, caption="✨ 深邃星空")
 
 def quiz_challenge():
     """答题挑战馆模块"""
@@ -1106,9 +1109,9 @@ def data_analysis():
     topic_stats['accuracy'] = topic_stats['accuracy'].fillna(0)
     topic_stats = topic_stats.sort_values('accuracy', ascending=True).reset_index(drop=True)
     
-    high_sat = ['#FF1744', '#FF9100', '#FFEA00', '#00E676', '#2979FF',
-                '#D500F9', '#FF4081', '#00BCD4', '#76FF03', '#FF6D00']
-    colors = high_sat[:len(topic_stats)]
+    space_colors = ['#FF6B6B', '#FF9F43', '#FECA57', '#48DBFB', '#0ABDE3',
+                    '#A29BFE', '#FD79A8', '#00D2D3', '#6C5CE7', '#FDCB6E']
+    colors = space_colors[:len(topic_stats)]
     
     bars = alt.Chart(topic_stats).mark_bar(cornerRadiusTopRight=4, cornerRadiusBottomRight=4).encode(
         x=alt.X('accuracy:Q', title='正确率 (%)', scale=alt.Scale(domain=[0, 100]), axis=alt.Axis(labelFontSize=12, labelColor='rgba(255,255,255,0.7)', titleColor='rgba(255,255,255,0.9)', gridColor='rgba(255,255,255,0.06)', domainColor='rgba(255,255,255,0.1)', tickColor='rgba(255,255,255,0.1)')),
@@ -1189,7 +1192,7 @@ def ai_assistant():
         st.session_state['chat_df'] = pd.DataFrame(columns=['timestamp', 'user_message', 'ai_response'])
 
     # ===== 风格选择 + 操作按钮 =====
-    col1, col2, col3 = st.columns([2.5, 2.5, 1])
+    col1, col2 = st.columns([4, 1])
     with col1:
         st.markdown('<p style="font-size:0.8rem;color:rgba(255,255,255,0.55);margin-bottom:0.2rem;">🎭 AI 人格</p>', unsafe_allow_html=True)
         selected_persona = st.selectbox(
@@ -1201,9 +1204,7 @@ def ai_assistant():
         if selected_persona != st.session_state['ai_persona']:
             st.session_state['ai_persona'] = selected_persona
     with col2:
-        st.markdown('<div style="margin-top:1.4rem;"></div>', unsafe_allow_html=True)
-    with col3:
-        st.markdown('<div style="margin-top:0.6rem;">', unsafe_allow_html=True)
+        st.markdown('<div style="margin-top:1.5rem;">', unsafe_allow_html=True)
         if st.button("🗑️ 新对话", use_container_width=True):
             st.session_state['chat_history'] = []
             st.rerun()
@@ -1314,8 +1315,8 @@ def show_auth_page():
         st.markdown("""
         <div style="text-align:center;margin:2rem 0 1.5rem;">
             <div style="font-size:4rem;margin-bottom:0.5rem;">🌌</div>
-            <h1 style="font-size:2rem;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">星空学堂</h1>
-            <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;">探索宇宙的奥秘</p>
+            <h1 style="font-size:2rem;text-align:center;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">星空学堂</h1>
+            <p style="color:rgba(255,255,255,0.5);font-size:0.9rem;text-align:center;">探索宇宙的奥秘</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -1347,6 +1348,77 @@ def show_auth_page():
                             st.success("注册成功！请切换到登录页登录")
                         else:
                             st.error(msg)
+
+def astronomy_query():
+    """天文数据查询页面"""
+    st.markdown('<h1 class="cosmo-page-title">🌤️ 天文数据查询</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="cosmo-page-subtitle">查询任意地点的日出日落、月相月照、金色与蓝色时刻</p>', unsafe_allow_html=True)
+
+    loc_mode = st.radio("查询方式", ["城市名称", "经纬度"], label_visibility="collapsed", key="astro_mode", horizontal=True)
+    loc_val = None; lat_val = None; lon_val = None
+    if loc_mode == "城市名称":
+        loc_val = st.text_input("输入城市名（如 Beijing、Tokyo）", placeholder="城市英文名", label_visibility="collapsed", key="astro_city")
+    else:
+        c1, c2 = st.columns(2)
+        with c1: lat_val = st.text_input("纬度", placeholder="39.9042", label_visibility="collapsed", key="astro_lat")
+        with c2: lon_val = st.text_input("经度", placeholder="116.4074", label_visibility="collapsed", key="astro_lon")
+
+    if st.button("🔍 查询天文数据", use_container_width=True, key="astro_btn"):
+        if loc_val:
+            data = get_astronomy_data(location=loc_val)
+        elif lat_val and lon_val:
+            try:
+                data = get_astronomy_data(lat=float(lat_val), long=float(lon_val))
+            except:
+                st.error("经纬度格式有误，请输入数字")
+                data = None
+        else:
+            st.info("请输入城市名称或经纬度")
+            data = None
+
+        if data:
+            sunrise = parse_time(data.get("sunrise", ""))
+            sunset = parse_time(data.get("sunset", ""))
+            civ_begin = parse_time(data.get("civil_twilight_begin", ""))
+            civ_end = parse_time(data.get("civil_twilight_end", ""))
+            if not civ_begin and sunrise:
+                civ_begin = add_min(sunrise, -30)
+            if not civ_end and sunset:
+                civ_end = add_min(sunset, 30)
+            day_len = data.get("day_length", "")
+            moon_phase = data.get("moon_phase", "")
+            moon_ill = data.get("moon_illumination_percentage", "")
+            loc_name = data.get("location", {}).get("city", loc_val or f"{lat_val},{lon_val}")
+
+            gh_m_start = add_min(sunrise, -25) if sunrise else None
+            gh_m_end = add_min(sunrise, 35) if sunrise else None
+            gh_e_start = add_min(sunset, -35) if sunset else None
+            gh_e_end = add_min(sunset, 25) if sunset else None
+            bh_m_start = civ_begin
+            bh_m_end = sunrise
+            bh_e_start = sunset
+            bh_e_end = civ_end
+
+            st.markdown(f"""
+            <div style="background:rgba(74,108,247,0.15);backdrop-filter:blur(8px);border-radius:14px;border:1px solid rgba(255,255,255,0.08);padding:1.2rem 1.5rem;margin-top:0.6rem;">
+                <div style="font-size:0.95rem;color:rgba(255,255,255,0.9);line-height:2;">
+                    <div style="font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;">📍 {loc_name}</div>
+                    <div>🌅 日出：<strong>{fmt_t(sunrise) if sunrise else '--'}</strong></div>
+                    <div>🌇 日落：<strong>{fmt_t(sunset) if sunset else '--'}</strong></div>
+                    <div>⏳ 昼长：<strong>{day_len}</strong></div>
+                    <hr style="border-color:rgba(255,255,255,0.08);margin:0.3rem 0;">
+                    <div>🌙 月相：<strong>{moon_phase}</strong>（{moon_ill}%）</div>
+                    <hr style="border-color:rgba(255,255,255,0.08);margin:0.3rem 0;">
+                    <div>🌆 民用晨光始：<strong>{fmt_t(civ_begin) if civ_begin else '--'}</strong></div>
+                    <div>🌆 民用昏影终：<strong>{fmt_t(civ_end) if civ_end else '--'}</strong></div>
+                    <hr style="border-color:rgba(255,255,255,0.08);margin:0.3rem 0;">
+                    <div>✨ 金色时刻（晨）：<strong>{fmt_t(gh_m_start) if gh_m_start else '--'} ~ {fmt_t(gh_m_end) if gh_m_end else '--'}</strong></div>
+                    <div>✨ 金色时刻（昏）：<strong>{fmt_t(gh_e_start) if gh_e_start else '--'} ~ {fmt_t(gh_e_end) if gh_e_end else '--'}</strong></div>
+                    <div>🔵 蓝色时刻（晨）：<strong>{fmt_t(bh_m_start) if bh_m_start else '--'} ~ {fmt_t(bh_m_end) if bh_m_end else '--'}</strong></div>
+                    <div>🔵 蓝色时刻（昏）：<strong>{fmt_t(bh_e_start) if bh_e_start else '--'} ~ {fmt_t(bh_e_end) if bh_e_end else '--'}</strong></div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
 
 # ==================== 主函数 ====================
 
@@ -1384,7 +1456,7 @@ def main():
         st.markdown(f'<div style="font-size:1.1rem;font-weight:700;margin-bottom:0.4rem;padding-left:0.2rem;">👤 {st.session_state["user"]}</div>', unsafe_allow_html=True)
         
         # 菜单选项
-        menu_options = ["每日天文", "答题挑战", "学习数据分析", "天文AI助手"]
+        menu_options = ["每日天文", "天文数据查询", "答题挑战", "学习数据分析", "天文AI助手"]
         selected_page = st.radio("导航", menu_options, label_visibility="collapsed")
         
         # 退出按钮
@@ -1415,6 +1487,8 @@ def main():
     # 根据选择显示不同页面
     if selected_page == "每日天文":
         daily_apod()
+    elif selected_page == "天文数据查询":
+        astronomy_query()
     elif selected_page == "答题挑战":
         quiz_challenge()
     elif selected_page == "学习数据分析":
