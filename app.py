@@ -706,6 +706,7 @@ def apply_global_css():
         font-size: 0.8rem !important;
         padding: 0.5rem 0.8rem !important;
         border: none !important;
+        text-align: center !important;
     }
     .stTable tbody tr td {
         padding: 0.4rem 0.8rem !important;
@@ -713,6 +714,7 @@ def apply_global_css():
         border-bottom: 1px solid rgba(255,255,255,0.04) !important;
         color: rgba(255,255,255,0.85) !important;
         font-weight: 500 !important;
+        text-align: center !important;
     }
     .stTable tbody tr:hover td {
         background: rgba(74,108,247,0.06) !important;
@@ -910,19 +912,34 @@ def daily_apod():
         st.session_state[cache_key] = None
 
     if st.session_state[cache_key] is None:
+        import json as _json
         prompt = f"""你是天文科普专家。请为今天（{today_str}）生成一条有趣的天文知识。
 以JSON格式返回，严格按以下结构，不要加额外文字：
 {{"title": "简短标题（10字内）", "explanation": "300-500字的科普说明，通俗易懂，内容准确"}}"""
         with st.spinner("🧠 AI 正在生成今日天文知识..."):
             try:
                 raw = call_llm_api([], prompt)
-                import json as _json
                 resp = _json.loads(raw.strip())
                 title = resp.get("title", "今日天文")
                 explanation = resp.get("explanation", "暂无内容")
             except:
-                title = "🌠 今日天文"
-                explanation = "宇宙浩瀚无垠，每一天都有新的发现等待我们去探索。从恒星诞生到星系演化，天文学不断揭示着宇宙的奥秘。"
+                # DeepSeek不可用时展示本地科普知识
+                import random as _r
+                local_knowledge = [
+                    {"title": "火星的落日是蓝色的", "explanation": "在火星上，日落时分的天空会呈现奇特的蓝色调。这是因为火星大气中富含尘埃颗粒，这些尘埃散射蓝光的能力比红光更强，因此当太阳低垂时，蓝色光被散射到更广的天空区域，形成独特的蓝色日落景象。相比之下，地球大气分子散射蓝光更强烈，这就是为什么我们的天空是蓝色而日落呈红色的原因。"},
+                    {"title": "土星可以漂浮在水上", "explanation": "土星是太阳系中密度最小的行星，其平均密度约为0.687克/立方厘米，比水的密度（1克/立方厘米）还要低。这意味着如果有一个足够大的水池，土星理论上可以漂浮在水面上。土星主要由氢和氦组成，其质量虽大（地球的95倍），但体积更大，因此整体密度极低。"},
+                    {"title": "银河系正撞向仙女座星系", "explanation": "银河系和仙女座星系正以约每秒120公里的速度相互靠近，预计约40亿年后将发生碰撞。这听起来很可怕，但由于星系内部恒星之间的空间极为空旷，实际恒星相撞的概率极低。这次碰撞将引发新一轮恒星形成浪潮，最终两个星系将合并成一个巨大的椭圆星系，天文学家已将其命名为'银河仙女座'。"},
+                    {"title": "月球每年都在远离地球", "explanation": "月球正以每年约3.8厘米的速度远离地球。这是因为月球引力引起地球海洋潮汐，地球自转比月球公转快，导致潮汐凸起超前于月球，反过来给月球施加了一个微小的加速力，使其轨道逐渐扩大。在数十亿年前，月球离地球更近，那时的潮汐更强烈，一天的时间也更短。"},
+                    {"title": "宇宙中最大的已知天体", "explanation": "宇宙中最大的已知结构是武仙座-北冕座长城，这是一个由星系组成的巨大纤维状结构，跨度约100亿光年。相比之下，我们所在的银河系直径仅10万光年。这个超大规模结构挑战了宇宙学原理——即宇宙在大尺度上是均匀的假设，因为它的尺寸远超理论预测的均匀性尺度上限。"},
+                    {"title": "太阳的惊人能量", "explanation": "太阳每秒钟释放的能量相当于约960亿颗百万吨级核弹同时爆炸。然而，我们地球只接收到了太阳总能量的约22亿分之一。太阳核心的温度高达1500万摄氏度，压力极大，在这里每秒钟约有6.2亿吨氢通过核聚变转化为6.16亿吨氦，损失的质量转化为巨大的能量输出。"},
+                    {"title": "脉冲星是宇宙最精准的时钟", "explanation": "脉冲星是中子星的一种，它们高速自转并发射出稳定的射电脉冲信号。有些毫秒脉冲星的自转稳定程度甚至超过了原子钟，达到每10亿年才误差1秒的水平。天文学家利用脉冲星的精确计时来探测引力波、研究星系结构，甚至为未来的星际导航提供天然信标。"},
+                    {"title": "黑洞并非真的黑色", "explanation": "虽然黑洞本身不发出任何光线，但黑洞周围活跃的吸积盘却可以成为宇宙中最亮的天体之一。当物质被黑洞引力吸引而高速旋转落入时，摩擦加热到数百万摄氏度，释放出强烈的X射线和可见光。有些超大质量黑洞（类星体）的亮度可以超过其所在星系所有恒星的总和。"},
+                    {"title": "金星的一天比一年还长", "explanation": "金星的自转周期约为243个地球日，而它绕太阳公转一周只需要约225个地球日。这意味着金星上的一天比一年还要长！此外，金星是太阳系中唯一逆向自转的行星，在金星上太阳从西方升起，在东方落下。金星的自转速度极慢，导致其几乎没有磁场保护。"},
+                    {"title": "水星有尾巴", "explanation": "水星虽然体积小巧，但它实际上拥有一条类似彗星的钠原子尾巴。太阳风和微陨石撞击将水星表面的钠原子剥离，这些原子被太阳辐射压推离水星，在背向太阳的方向形成了一条长长的尾巴。这条尾巴只有通过特殊的钠黄光滤镜才能观测到，延伸可达数百万公里。"},
+                ]
+                idx = _r.randint(0, len(local_knowledge) - 1)
+                title = local_knowledge[idx]["title"]
+                explanation = local_knowledge[idx]["explanation"]
             st.session_state[cache_key] = {"title": title, "explanation": explanation}
 
     data = st.session_state[cache_key]
@@ -1360,7 +1377,7 @@ def ai_assistant():
 def call_llm_api(chat_history, system_prompt):
     """调用DeepSeek API（支持完整对话上下文）"""
     if not DEEPSEEK_API_KEY:
-        return "抱歉，AI服务暂时不可用，请稍后再试。建议查阅NASA官网。"
+        return "抱歉，AI服务暂不可用（未配置 DeepSeek API 密钥），请在 .env 中设置 DEEPSEEK_API_KEY。"
 
     headers = {
         "Content-Type": "application/json",
