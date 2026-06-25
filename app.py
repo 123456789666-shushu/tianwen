@@ -24,10 +24,11 @@ import json
 import altair as alt
 import random
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
-
-# 加载环境变量
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 # ==================== 环境变量配置 ====================
 NASA_API_KEY = os.getenv("NASA_API_KEY", "DEMO_KEY")
